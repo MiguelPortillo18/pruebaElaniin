@@ -6,9 +6,15 @@ const mongoose = require('mongoose')
 
 const app = express()
 
+const router = express.Router()
+
 const port = process.env.PORT || 4000
 
 app.set('port', port)
+
+app.use(express.json())
+
+app.use(router)
 
 var server = http.createServer(app)
 server.listen(port)
@@ -18,7 +24,7 @@ server.on('error', (e) => {
 })
 
 server.on('listening', () => {
-    console.log(`Listening on ${port}`);
+    console.log(`Listening on port ${port}`);
 })
 
 mongoose.connect(process.env.MONGO_URI, {
@@ -34,6 +40,9 @@ mongoose.connect(process.env.MONGO_URI, {
     console.log(err);
 })
 
-app.get('/', (req, res) => {
-    return res.status(200).send('a')
-})
+const UserController = require('./Controllers/UserController')
+
+app.post('/register', UserController.registerUser)
+app.get('/getUsers', UserController.readUser)
+app.put('/update', UserController.updateUser)
+app.delete('/delete', UserController.deleteUser)
