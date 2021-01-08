@@ -27,7 +27,7 @@ const UserValidator = {
     loginValidator: info => {
         const Schema = joi.object({
             username: joi.string()
-                .min(10),
+                .min(6),
             email: joi.string()
                 .min(8)
                 .email(),

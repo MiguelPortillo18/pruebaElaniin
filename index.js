@@ -42,7 +42,11 @@ mongoose.connect(process.env.MONGO_URI, {
 
 const UserController = require('./Controllers/User/UserController')
 
+const Authentication = require('./Routes/Authenticator')
+
 app.post('/register', UserController.registerUser)
-app.get('/getUsers', UserController.readUser)
+app.post('/login',UserController.login)
+app.get('/currentUser', Authentication, UserController.readCurrentUser)
+app.get('/getUsers', UserController.readUsers)
 app.put('/update', UserController.updateUser)
 app.delete('/delete', UserController.deleteUser)

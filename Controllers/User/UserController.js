@@ -1,8 +1,9 @@
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 const User = require('../../Models/UserModel')
 
-const { registerValidator } = require('./Validator')
+const { registerValidator, loginValidator } = require('./Validator')
 
 var UserController = {
     registerUser: async (req, res) => {
@@ -33,15 +34,55 @@ var UserController = {
             return res.status(400).json(err.details != null ? err.details[0].message : err)
         }
     },
-    readUser: async function(req, res) {
-        var userList = await User.find()
+    login: async (req,res) => {
+        try {
+            await loginValidator(req.body)
 
-        return res.status(200).json(
-            {
-            count: userList.length,
-            list: userList
-            }
-        )
+            const user = (req.body.email == null) ? await User.findOne({username: req.body.username}) : await user.findOne({email: req.body.email})
+            
+            if(!user)
+                throw {error: true, message: "Username or Email not found"}
+
+            var logged = await bcrypt.compare(req.body.password, user.password)
+
+            if(!logged)
+                throw {error: true, message: "Wrong password"}
+
+            const token = jwt.sign({_id: user._id}, process.env.TOKEN_KEY)
+
+            return res.status(200).json({token: token})
+        
+        }
+        catch(err) {
+            console.log(err);
+            return res.status(400).json(err.details != null ? err.details[0].message : err)
+        }
+    },
+    readCurrentUser: async (req,res) => {
+        const user = await User.findOne({_id: req.user._id})
+
+        return res.status(200).json(user)
+    },
+    readUsers: async function(req, res) {
+        try{
+            const { page = 1, limit = 10 } = req.query
+
+            const users = await User.find()
+                .limit(limit * 1)
+                .skip((page - 1) * limit)
+                .exec()
+
+            const counter = await User.countDocuments()
+
+            return res.status(200).json({
+                totalPages: Math.ceil(counter / limit),
+                currentPage: page,
+                users
+            })
+        }
+        catch(err) {
+            return res.status(500).json({error: true, message: "There was a problem."})
+        }
     },
     updateUser: async function(req, res) {
         try {
