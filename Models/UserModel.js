@@ -21,7 +21,8 @@ var UserSchema = Schema({
         type: String,
         required: true,
         unique: true
-    }
+    },
+    tokenRecover: String
 })
 
 module.exports = model("User", UserSchema)

@@ -1,12 +1,13 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const mailerHandler = require('../Utilities/Sendgrid')
 
 const User = require('../../Models/UserModel')
 
-const { registerValidator, loginValidator } = require('./Validator')
+const { registerValidator, loginValidator, updateValidator } = require('./Validator')
 
 var UserController = {
-    registerUser: async (req, res) => {
+    registerUser: async function (req, res) {
         try {
             await registerValidator(req.body)
 
@@ -34,7 +35,7 @@ var UserController = {
             return res.status(400).json(err.details != null ? err.details[0].message : err)
         }
     },
-    login: async (req,res) => {
+    login: async function (req,res) {
         try {
             await loginValidator(req.body)
 
@@ -58,7 +59,7 @@ var UserController = {
             return res.status(400).json(err.details != null ? err.details[0].message : err)
         }
     },
-    readCurrentUser: async (req,res) => {
+    readCurrentUser: async function (req,res){
         const user = await User.findOne({_id: req.user._id})
 
         return res.status(200).json(user)
@@ -86,23 +87,38 @@ var UserController = {
     },
     updateUser: async function(req, res) {
         try {
-            var updateUser = await User.findOne({_id: req.body._id})
+            await updateValidator(req.body)
+            
+            var actualUser = await User.findOne({_id: req.user._id})
 
-            if(!updateUser)
-                throw { err: "User not found" }
+            const findUsers = await User.find({ $or: [{username: req.body.username}, {email: req.body.email}]})
 
-            updateUser = {
-                name: req.body.name || updateUser.name,
-                phone: req.body.phone || updateUser.phone,
-                username: req.body.username || updateUser.username,
-                birth: req.body.birth || updateUser.birth,
-                email: req.body.email || updateUser.email,
-                password: req.body.password || updateUser.password
+            var verify = true
+
+            if(findUsers.length != 0)
+                findUsers.forEach( usr => {
+                    if(req.user._id != usr._id)
+                        if(usr.username == req.body.username || usr.email == req.body.email)
+                            verify = false
+                })
+
+            if(!verify)
+                throw {error: true, message: "This Username or Email already exists"}
+
+            var passwwordToHash = req.body.password == null ? null : await bcrypt.hash(req.body.password, user.password)
+
+            actualUser = {
+                name: req.body.name || actualUser.name,
+                phone: req.body.phone || actualUser.phone,
+                username: req.body.username || actualUser.username,
+                birth: req.body.birth || actualUser.birth,
+                email: req.body.email || actualUser.email,
+                password: passwwordToHash || actualUser.password
             }
 
-            await User.findOneAndUpdate({ _id: req.body._id}, updateUser)
+            await User.findOneAndUpdate({_id: req.user._id}, actualUser)
 
-            return res.status(200).json({error: false, data: { _id: updateUser._id, message: "Updated with success" } })
+            return res.status(200).json({error: false, message: "Updated with success"})
         } 
         catch (err) {
             console.log(err);
@@ -113,6 +129,39 @@ var UserController = {
         await User.findOneAndDelete({ _id: req.body._id})
 
         return res.status(200).json({error: false, message: "Deleted with success"})
+    },
+    recoverPassword: async function(req, res) {
+        try {
+            var user = await User.findOne({email: req.body.email})
+
+            if(!user)
+                throw {error: true, message: "Email not found"} 
+            
+            const newToken = jwt.sign({_id: user._id}, process.env.TOKEN_RESET_KEY, {expiresIn: '15m'})
+
+            const recoverEmail = {
+                to: req.body.email,
+                from: process.env.MAIL,
+                subject: "ApiTest Team. Password recovery.",
+                html: 
+                `
+                    <h2> Hola ${user.name} ! </h2>
+                    <p> Para recuperar tu contraseña debes acceder al siguiente link: </p>
+                    <a href="${process.env.MAIN_URL}/recover/${newToken}" target="_blank"> Link de recuperacion </a>
+                    <p> En caso de tener algún problema, favor escribir a este correo: ${process.env.MAIN_EMAIL_ACCOUNT} para obtener soporte técnico. </p>
+                    <h3> ApiTest Team. </h3>
+                `
+            }
+
+            await User.findOneAndUpdate({_id: user._id}, {tokenRecover: newToken})
+            await mailerHandler(recoverEmail) 
+
+            return res.header('Authorization', newToken).status(200).json({error: false, message: "Email sent."})
+        }
+        catch(err) {
+            console.log(err);
+            return res.status(500).json(err)
+        }
     }
 }
 

@@ -37,6 +37,25 @@ const UserValidator = {
         })
 
         return Schema.validateAsync(info)
+    },
+
+    updateValidator: info => {
+        const Schema = joi.object({
+            name: joi.string()
+                .min(6),
+            phone: joi.string()
+                .pattern(new RegExp('^[0-9]{8}$')),
+            username: joi.string()
+                .min(6),
+            birth: joi.string(),
+            email: joi.string()
+                .min(8)
+                .email(),
+            password: joi.string()
+                .min(6)
+        })
+
+        return Schema.validateAsync(info)
     }
 }
 
