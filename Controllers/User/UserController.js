@@ -1,23 +1,36 @@
-const User = require('../Models/UserModel')
+const bcrypt = require('bcrypt')
+
+const User = require('../../Models/UserModel')
+
+const { registerValidator } = require('./Validator')
 
 var UserController = {
     registerUser: async (req, res) => {
         try {
-            const user = new User({
+            await registerValidator(req.body)
+
+            const verifyingUniqueFields = await User.find({ $or: [{username: req.body.username}, {email: req.body.email}]})
+
+            if(verifyingUniqueFields.length != 0)
+                throw "This email or username already exists."
+
+            let passwordToHash = await bcrypt.hash(req.body.password, 10)
+
+            let user = new User({
                 name: req.body.name,
                 phone: req.body.phone,
                 username: req.body.username,
                 birth: req.body.birth,
                 email: req.body.email,
-                password: req.body.password
+                password: passwordToHash
             })
             
             await user.save()
-            return res.status(201).json({error: false, data: { _id: user._id, message: "Created with success" } }) 
+            return res.status(201).json({error: false, data: { _id: user._id, message: "Registered with success" } }) 
         } 
         catch (err) {
             console.log(err);
-            return res.status(400).json({error: true, message: "Something went wrong", err: err})
+            return res.status(400).json(err.details != null ? err.details[0].message : err)
         }
     },
     readUser: async function(req, res) {

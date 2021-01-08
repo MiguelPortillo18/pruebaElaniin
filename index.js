@@ -40,7 +40,7 @@ mongoose.connect(process.env.MONGO_URI, {
     console.log(err);
 })
 
-const UserController = require('./Controllers/UserController')
+const UserController = require('./Controllers/User/UserController')
 
 app.post('/register', UserController.registerUser)
 app.get('/getUsers', UserController.readUser)
