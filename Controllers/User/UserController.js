@@ -4,11 +4,12 @@ const mailerHandler = require('../Utilities/Sendgrid')
 
 const User = require('../../Models/UserModel')
 
-const { registerValidator, loginValidator, updateValidator } = require('./Validator')
+const { registerValidator, loginValidator, updateValidator } = require('./UserValidator')
 
 var UserController = {
     registerUser: async function (req, res) {
         try {
+
             await registerValidator(req.body)
 
             const verifyingUniqueFields = await User.find({ $or: [{username: req.body.username}, {email: req.body.email}]})
@@ -25,6 +26,7 @@ var UserController = {
                 birth: req.body.birth,
                 email: req.body.email,
                 password: passwordToHash
+                //productImg: req.file.location
             })
             
             await user.save()
@@ -49,7 +51,7 @@ var UserController = {
             if(!logged)
                 throw {error: true, message: "Wrong password"}
 
-            const token = jwt.sign({_id: user._id}, process.env.TOKEN_KEY)
+            const token = jwt.sign({_id: user._id}, process.env.TOKEN_KEY_AUTH)
 
             return res.status(200).json({token: token})
         
@@ -136,19 +138,19 @@ var UserController = {
 
             if(!user)
                 throw {error: true, message: "Email not found"} 
-            
+
             const newToken = jwt.sign({_id: user._id}, process.env.TOKEN_RESET_KEY, {expiresIn: '15m'})
 
             const recoverEmail = {
                 to: req.body.email,
-                from: process.env.MAIL,
+                from: process.env.MAIN_EMAIL,
                 subject: "ApiTest Team. Password recovery.",
                 html: 
                 `
                     <h2> Hola ${user.name} ! </h2>
                     <p> Para recuperar tu contraseña debes acceder al siguiente link: </p>
                     <a href="${process.env.MAIN_URL}/recover/${newToken}" target="_blank"> Link de recuperacion </a>
-                    <p> En caso de tener algún problema, favor escribir a este correo: ${process.env.MAIN_EMAIL_ACCOUNT} para obtener soporte técnico. </p>
+                    <p> En caso de tener algún problema, favor escribir a este correo: ${process.env.MAIN_EMAIL} para obtener soporte técnico. </p>
                     <h3> ApiTest Team. </h3>
                 `
             }
@@ -170,7 +172,7 @@ var UserController = {
             if(!newToken)
                 throw {error: true, message: "Access Denied"}
 
-            const verifyingToken = jwt.verify(newToken, process.env.TOKEN_RESET_KEY)
+            const verifyingToken = jwt.verify(newToken, process.env.TOKEN_AUTH_RESET_KEY)
 
             if(!verifyingToken)
             throw {error: true, message: "Invalid token"}

@@ -44,6 +44,12 @@ const UserController = require('./Controllers/User/UserController')
 
 const Authentication = require('./Routes/Authenticator')
 
+//const { uploadMulter } = require('./Controllers/Utilities/imageLoader')
+const ProductController = require('./Controllers/Product/ProductController')
+//ruta crear producto: ruta, uploadMulter.single('productImg'), metodo
+
+//Rutas creadas para manejar informacion del usuario
+
 app.post('/register', UserController.registerUser)
 app.post('/login',UserController.login)
 app.get('/currentUser', Authentication, UserController.readCurrentUser)
@@ -52,3 +58,12 @@ app.put('/update', Authentication, UserController.updateUser)
 app.delete('/delete', UserController.deleteUser)
 app.post('/recovery', UserController.recoverPassword)
 app.post('/handler', UserController.recoveryHandler)
+
+//Rutas creadas para manejar informacion de los productos
+
+app.post('/createProduct', ProductController.createProduct)
+app.get('/getProduct', ProductController.getProduct)
+app.get('/getallproducts', ProductController.getAllProducts)
+app.put('/updateProduct', ProductController.updateProduct)
+app.delete('/deleteProd', ProductController.deleteProduct)
+app.get('/findProduct', ProductController.findProducts)

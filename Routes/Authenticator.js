@@ -8,7 +8,7 @@ function Authentication(req, res, next) {
         return res.status(401).json({eror: true, mssage: "Access Denied"})
 
     try {
-        const verification = jwt.verify(token, process.env.TOKEN_KEY)
+        const verification = jwt.verify(token, process.env.TOKEN_KEY_AUTH)
         req.user = verification
 
         next()
