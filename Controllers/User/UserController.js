@@ -162,6 +162,33 @@ var UserController = {
             console.log(err);
             return res.status(500).json(err)
         }
+    },
+    recoveryHandler: async function(req, res) {
+        try {
+            const newToken = req.header('Authorization')
+
+            if(!newToken)
+                throw {error: true, message: "Access Denied"}
+
+            const verifyingToken = jwt.verify(newToken, process.env.TOKEN_RESET_KEY)
+
+            if(!verifyingToken)
+            throw {error: true, message: "Invalid token"}
+
+            var user = await User.findOne({_id: verifyingToken._id}) 
+
+            user.password = await bcrypt.hash(req.body.newPassword, parseInt(process.env.SALT))
+
+            user.tokenRecover = null
+
+            await User.findOneAndUpdate({_Id: user._id}, {password: user.password, tokenRecover: user.tokenRecover})
+
+            return res.status(200).json({error: false, message: "Password recover correctly, try to log in"})
+        }
+        catch(err) {
+            console.log(err);
+            return res.status(500).json(err)
+        }
     }
 }
 
