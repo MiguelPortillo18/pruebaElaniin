@@ -26,7 +26,6 @@ var UserController = {
                 birth: req.body.birth,
                 email: req.body.email,
                 password: passwordToHash
-                //productImg: req.file.location
             })
             
             await user.save()
@@ -128,9 +127,15 @@ var UserController = {
         }
     },
     deleteUser: async function(req, res) {
-        await User.findOneAndDelete({ _id: req.body._id})
+        try {
+            await User.findOneAndDelete({ _id: req.user._id})
 
-        return res.status(200).json({error: false, message: "Deleted with success"})
+            return res.status(200).json({error: false, message: "Deleted with success"})
+        }
+        catch(err) {
+            console.log(err);
+            return res.status(400).json({error: true, message: "Something went wrong", err: err})
+        }
     },
     recoverPassword: async function(req, res) {
         try {

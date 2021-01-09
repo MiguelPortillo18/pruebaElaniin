@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken')
 
 function Authentication(req, res, next) {
-    console.log(`Ejecutando middleware`);
     const token = req.header('Authorization')
 
     if(!token)
@@ -10,6 +9,7 @@ function Authentication(req, res, next) {
     try {
         const verification = jwt.verify(token, process.env.TOKEN_KEY_AUTH)
         req.user = verification
+        req.product = verification
 
         next()
     }

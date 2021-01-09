@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken')
+
 const Product = require('../../Models/ProductModel')
 
 const { createProductValidator, updateProductValidator, findProductValidator } = require('./ProductValidator')
@@ -20,11 +22,13 @@ var ProductController = {
                 quantity: req.body.quantity,
                 price: req.body.price,
                 desc: req.body.desc,
-                //productImg: req.file.location
+                productImg: req.body.productImg
             })
 
+            const token = jwt.sign({_id: product._id}, process.env.TOKEN_KEY_AUTH)
+
             await product.save()
-            return res.status(201).json({error: false, data: { _id: product._id, message: "Product created with success" } }) 
+            return res.status(201).json({error: false, data: { _id: product._id, token: token, message: "Product created with success" } }) 
         }
         catch(err) {
             console.log(err);
@@ -95,7 +99,7 @@ var ProductController = {
         }
     },
     deleteProduct: async function(req, res) {
-        await Product.findOneAndDelete({ _id: req.body._id})
+        await Product.findOneAndDelete({ _id: req.product._id})
 
         return res.status(200).json({error: false, message: "Deleted with success"})
     },
@@ -103,12 +107,12 @@ var ProductController = {
         try {
             await findProductValidator(req.body)
 
-            const product = (req.body.SKU == null) ? await Product.findOne({SKU: req.body.SKU}) : await product.findOne({name: req.body.name})
+            const product = (req.body.name == null) ? await Product.findOne({SKU: req.body.SKU}) : await product.findOne({name: req.body.name})
             
             if(!product)
                 throw {error: true, message: "SKU or product name not found"}
 
-                return res.status(200).json(product)
+            return res.status(200).json(product)
         }
         catch(err) {
             console.log(err);

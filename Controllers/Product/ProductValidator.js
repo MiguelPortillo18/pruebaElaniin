@@ -4,16 +4,17 @@ const ProductValidator = {
     createProductValidator: info => {
         const Schema = joi.object({
             SKU: joi.string()
-            .min(8),
+                .min(8),
             name: joi.string()
                 .min(4)
                 .required(),
             quantity: joi.string()
-                .pattern(new RegExp('^[0-9]{2}$')),
+                .pattern(new RegExp('^[0-9]{1,5}$')),
             price: joi.string()
-                .pattern(new RegExp('^\$?(([1-9]\d{0,2}(,\d{3})*)|0)?\.\d{1,2}$')),
+                .pattern(new RegExp('^\$[0-9]{1,5}|\.[0-9]{2}')),
             desc: joi.string()
-                .min(5)
+                .min(5),
+            productImg: joi.string()
         })
 
         return Schema.validateAsync(info)
@@ -27,9 +28,9 @@ const ProductValidator = {
                 .min(4)
                 .required(),
             quantity: joi.string()
-                .pattern(new RegExp('^[0-9]{4}$')),
+                .pattern(new RegExp('^[0-9]{1,5}$')),
             price: joi.string()
-                .pattern(new RegExp('^\$(\d{1,3}(\,\d{3})*|(\d+))(\.\d{2})?$')),
+                .pattern(new RegExp('^\$[0-9]{1,5}|\.[0-9]{2}')),
             desc: joi.string()
                 .min(5)
         })
@@ -40,9 +41,13 @@ const ProductValidator = {
     findProductValidator: info => {
         const Schema = joi.object({
             SKU: joi.string()
-            .min(8),
+                .min(8)
+                .valid()
+                .insensitive(),
             name: joi.string()
                 .min(4)
+                .valid()
+                .insensitive()
         })
 
         return Schema.validateAsync(info)
