@@ -1,5 +1,12 @@
 # RestFul API Test
 
+## Instalación del código
+
+- Clonar repositorio.
+- Abrir el repositorio con Visual Studio Code.
+- Ejecutar comando: ***npm install***, para instalar las dependencias de npm.
+- Ejecutar comando: ***npm run start*** o ***npm run dev*** para ejecutar la aplicación.
+
 ## Documentación de la API:
 - [Contenido y detalles de la API](#contenido-y-detalles-de-la-api)
 - [Tecnologías implementadas dentro de la API](#tecnologías-implementadas-dentro-de-la-api)
