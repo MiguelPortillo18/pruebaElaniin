@@ -18,7 +18,7 @@ const ProductValidator = {
                 .pattern(new RegExp('^\$[0-9]{1,5}|\.[0-9]{2}')), //Expresion regular para que el precio del producto sea en formato de moneda
             desc: joi.string()
                 .min(5),
-            productImg: joi.string()
+            productImg: joi.string().uri()
         })
 
         return Schema.validateAsync(info)
