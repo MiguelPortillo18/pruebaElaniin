@@ -110,4 +110,4 @@ A continuación se presentan algunos de los paquetes y tecnologías utilizadas e
          
          > **Resultado de la petición:** Información de un producto en específico pero solicitado mediante su propia información (SKU y/o nombre de producto).
 ### Anexos
-  - [Deploy de la API en Heroku]()
+  - [Deploy de la API en Heroku](https://elaniin-apitest.herokuapp.com/)
