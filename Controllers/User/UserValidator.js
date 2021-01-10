@@ -7,7 +7,7 @@ const UserValidator = {
                 .min(6)
                 .required(),
             phone: joi.string()
-                .pattern(new RegExp('^[0-9]{8}$')),
+                .pattern(new RegExp('^[0-9]{8,15}$')),
             username: joi.string()
                 .min(6)
                 .required(),
@@ -44,7 +44,7 @@ const UserValidator = {
             name: joi.string()
                 .min(6),
             phone: joi.string()
-                .pattern(new RegExp('^[0-9]{8}$')),
+                .pattern(new RegExp('^[0-9]{8,15}$')),
             username: joi.string()
                 .min(6),
             birth: joi.string(),
